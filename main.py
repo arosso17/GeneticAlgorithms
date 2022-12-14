@@ -7,29 +7,6 @@ def selection(cars):  # returns the top two performing cars of a generation
     sortedlist = sorted(cars, key=lambda x: x.score, reverse=True)
     return sortedlist[0], sortedlist[1]
 
-def crossover(c1, c2, checkpoints):
-    c1 = Car([100, 500], c1.nn.weights[:], c1.nn.biases[:], checkpoints[:])
-    c2 = Car([100, 500], c2.nn.weights[:], c2.nn.biases[:], checkpoints[:])
-    c3w = []
-    c4w = []
-    for par1, par2 in zip(c1.nn.weights, c2.nn.weights):
-        crosspoint = int(np.random.rand() * len(c1.nn.weights))
-        t3 = []
-        t4 = []
-        for p in par1[0:crosspoint]:
-            t3.append(p)
-        for p in par2[crosspoint:]:
-            t3.append(p)
-        for p in par2[0:crosspoint]:
-            t4.append(p)
-        for p in par2[crosspoint:]:
-            t4.append(p)
-        c3w.append(t3)
-        c4w.append(t4)
-    c3 = Car([100, 500], c3w, c1.nn.biases[:], checkpoints[:])
-    c4 = Car([100, 500], c4w, c1.nn.biases[:], checkpoints[:])
-    return [c1, c2, c3, c4]
-
 def main():
     run = True
 
@@ -59,6 +36,7 @@ def main():
     draw = True
     runs = 0
     old_best = cars[0]
+    brain = "NN"
     while run:
         win.fill("green")
         for road in roads:
@@ -89,46 +67,50 @@ def main():
         best_car, second_best = selection(cars)
         old_best.draw(win, lines, True, True)
         best_car.draw(win, lines, True, True)
+
         if num_crashed == len(cars) or (best_car.score > len(checkpoints) * 250):
-            runs += 1
-            # best_car, second_best = selection(cars)
+            if brain == "NN":
+                runs += 1
+                # best_car, second_best = selection(cars)
 
-            print("Generation: ", runs)
-            # print("high score: ", best_car.score, best_car)
-            # print("2nd high score: ", second_best.score, second_best)
+                print("Generation: ", runs)
+                # print("high score: ", best_car.score, best_car)
+                # print("2nd high score: ", second_best.score, second_best)
 
-            old_best = best_car
-            if best_car.score > (len(checkpoints) + 15) * 100:
-                print()
-                print()
-                print("WIN")
-                # print(best_car.nn.biases)
-                # print(best_car.nn.weights)
-                print()
-                print()
-                ncars = [Car([100, 500], None, None, checkpoints[:]) for _ in range(num)]
-                cars = ncars[:]
-                runs = 0
-                old_best = cars[0]
-            else:
-                ncars = crossover(best_car, second_best, checkpoints)  # with crossover
-                # ncars = [best_car, second_best]                      # without crossover
-                temp = []
-                for car in ncars:
-                    w, b = car.nn.variant()
-                    w = w[:]
-                    b = b[:]
-                    temp.append(Car([100, 500], w[:], b[:], checkpoints[:]))
-                for t in temp:
-                    ncars.append(t)
-                # ncars.append(Car([100, 500], None, None, checkpoints[:]))  # can add a couple random cars each gen
-                # ncars.append(Car([100, 500], None, None, checkpoints[:]))  # to increase genetic diversity
-                for _ in range(len(cars) - len(ncars)):
-                    w, b = best_car.nn.mutate()
-                    w = w[:]
-                    b = b[:]
-                    ncars.append(Car([100, 500], w[:], b[:], checkpoints[:]))
-                cars = ncars[:]
+                old_best = best_car
+                if best_car.score > (len(checkpoints) + 15) * 100:
+                    print()
+                    print()
+                    print("WIN")
+                    # print(best_car.nn.biases)
+                    # print(best_car.nn.weights)
+                    print()
+                    print()
+                    ncars = [Car([100, 500], None, None, checkpoints[:]) for _ in range(num)]
+                    cars = ncars[:]
+                    runs = 0
+                    old_best = cars[0]
+                else:
+                    ncars = crossover(best_car, second_best, checkpoints)  # with crossover
+                    # ncars = [best_car, second_best]                      # without crossover
+                    temp = []
+                    for car in ncars:
+                        w, b = car.nn.variant()
+                        w = w[:]
+                        b = b[:]
+                        temp.append(Car([100, 500], w[:], b[:], checkpoints[:]))
+                    for t in temp:
+                        ncars.append(t)
+                    # ncars.append(Car([100, 500], None, None, checkpoints[:]))  # can add a couple random cars each gen
+                    # ncars.append(Car([100, 500], None, None, checkpoints[:]))  # to increase genetic diversity
+                    for _ in range(len(cars) - len(ncars)):
+                        w, b = best_car.nn.mutate()
+                        w = w[:]
+                        b = b[:]
+                        ncars.append(Car([100, 500], w[:], b[:], checkpoints[:]))
+                    cars = ncars[:]
+            elif brain == "Q":
+                pass
 
         pg.display.flip()
         clock.tick()

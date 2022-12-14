@@ -4,6 +4,28 @@ from Road import *
 car = pg.image.load("car_top.png")
 car = pg.transform.rotozoom(car, 180, 0.25)
 
+def crossover(c1, c2, checkpoints):
+    c1 = Car([100, 500], c1.nn.weights[:], c1.nn.biases[:], checkpoints[:])
+    c2 = Car([100, 500], c2.nn.weights[:], c2.nn.biases[:], checkpoints[:])
+    c3w = []
+    c4w = []
+    for par1, par2 in zip(c1.nn.weights, c2.nn.weights):
+        crosspoint = int(np.random.rand() * len(c1.nn.weights))
+        t3 = []
+        t4 = []
+        for p in par1[0:crosspoint]:
+            t3.append(p)
+        for p in par2[crosspoint:]:
+            t3.append(p)
+        for p in par2[0:crosspoint]:
+            t4.append(p)
+        for p in par2[crosspoint:]:
+            t4.append(p)
+        c3w.append(t3)
+        c4w.append(t4)
+    c3 = Car([100, 500], c3w, c1.nn.biases[:], checkpoints[:])
+    c4 = Car([100, 500], c4w, c1.nn.biases[:], checkpoints[:])
+    return [c1, c2, c3, c4]
 
 class Car:
     def __init__(self, pos, weights, biases, cp):
